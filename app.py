@@ -1,17 +1,22 @@
 import streamlit as st
-import random
+import google.generativeai as genai
 
-# הגדרות דף
-st.set_page_config(page_title="קבינט המוחות", layout="wide")
+# הגדרות דף - מראה מקצועי ורחב
+st.set_page_config(page_title="הקבינט האסטרטגי - אפי", layout="wide")
 
-# מנגנון סיסמה
+# --- חיבור למוח של גוגל (GEMINI) ---
+API_KEY = "AIzaSyB12avvwGP6ECzfzTFOLDdfJHW37EQJvVo" 
+genai.configure(api_key=API_KEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
+
+# --- מנגנון אבטחה ---
 if 'auth' not in st.session_state:
     st.session_state['auth'] = False
 
 with st.sidebar:
     st.header("🔐 כניסה לקבינט")
-    pwd = st.text_input("סיסמת גישה:", type="password")
-    if st.button("התחבר"):
+    pwd = st.text_input("סיסמה:", type="password")
+    if st.button("פתח ישיבה"):
         if pwd == "אפי2026":
             st.session_state['auth'] = True
             st.rerun()
@@ -19,68 +24,51 @@ with st.sidebar:
             st.error("סיסמה שגויה")
 
 if not st.session_state['auth']:
-    st.warning("אנא הזן סיסמה כדי להתחיל בישיבה.")
+    st.info("ממתין לזיהוי מנהל הקבינט...")
     st.stop()
 
-# ניהול יועצים בסרגל הצד
-with st.sidebar:
-    st.divider()
-    st.header("👥 בחר את היועצים")
-    
-    cabinet_data = {
-        "סטיב ג'ובס": "🍏", "אלון מאסק": "🚀", "מהטמה גנדי": "🧘", 
-        "מרקו אורליוס": "🏛️", "ישעיהו לייבוביץ": "✡️", "זיגמונד פרויד": "🛋️", 
-        "פרידריך ניטשה": "🌋", "סונדאר פיצ'אי": "🔍", "ג'נסן הואנג": "🎮"
-    }
+# --- ממשק המשתמש ---
+st.title("🏛️ קבינט המוחות הגדולים: ניתוח אסטרטגי")
+st.markdown("### המערכת תנתח את הדילמה שלך דרך הצלבת דעות וסינתזה מעמיקה")
 
-    selected_members = []
-    for name in cabinet_data.keys():
-        if st.checkbox(name, value=True):
-            selected_members.append(name)
-            
-    st.divider()
-    surprise_on = st.toggle("הוסף יועץ בהפתעה", value=True)
+# אזור הזנת השאלה
+user_input = st.text_area("תאר את המיזם או הבעיה העסקית שלך:", 
+                          height=150, 
+                          placeholder="למשל: סקירת צרכים של עורכי דין בארה\"ב ללידים של תאונות דרכים...")
 
-# גוף האפליקציה
-st.title("🏛️ קבינט המוחות הגדולים")
-idea = st.text_area("העלה את המחשבה שלך כאן:", placeholder="למשל: האם כדאי לי לעזוב הכל ולפתוח חווה בפורטוגל?")
-
-if st.button("🚀 שמע את דעת הקבינט"):
-    if not idea:
-        st.error("כתוב רעיון כדי שהקבינט יוכל לדון בו.")
+if st.button("🚀 הפעל סימולציית קבינט"):
+    if not user_input:
+        st.warning("נא להזין תוכן לניתוח.")
     else:
-        # בנק התגובות
-        responses = {
-            "סטיב ג'ובס": "זה חסר נשמה. אם זה לא משאיר שריטה ביקום, חבל על הזמן שלך. איפה הטירוף?",
-            "אלון מאסק": "מה ה-First Principles כאן? זה צריך להיות יעיל פי 10 מהקיים או שזה יקרוס.",
-            "מהטמה גנדי": "האם זה משרת את האדם העני ביותר? קידמה ללא אנושיות היא אלימות שקטה.",
-            "מרקו אורליוס": "האם זה תואם את הטבע והחובה שלך? אם זה נובע מאגו, זה חסר ערך.",
-            "ישעיהו לייבוביץ": "שטויות! אתה מבלבל בין צרכים לערכים. זוהי עוד עבודת אלילים טכנולוגית.",
-            "זיגמונד פרויד": "זהו מנגנון פיצוי על חרדת שליטה. האם זה פתרון או סימפטום של תסביך?",
-            "פרידריך ניטשה": "האם זה רעיון של אדם עליון או של עדר? היה מסוכן, רק כך תצמח עוצמה.",
-            "סונדאר פיצ'אי": "מעניין, אבל האם זה Scaleable? בלי דאטה ותשתית ענן, אין פה באמת עסק.",
-            "ג'נסן הואנג": "אתה צריך יותר כוח מחשוב. אם זה לא רץ על GPU, זה כבר שייך לעבר."
-        }
+        with st.spinner("הקבינט מעבד את הנתונים ומייצר עימות רעיוני..."):
+            
+            # הפרומפט שגורם להם לחשוב באמת
+            full_prompt = f"""
+            נתח לעומק את הנושא הבא עבור אפי: "{user_input}"
+            
+            המשימה: צור דיון חי ונוקב בין המוחות הבאים:
+            1. סטיב ג'ובס (מיקוד בחוויית משתמש ופשטות קיצונית).
+            2. אלון מאסק (מיקוד באופטימיזציה הנדסית, דאטה וסקייל).
+            3. ניקולו מאקיאוולי (מיקוד בכוח, בלעדיות וניצול הזדמנויות בשוק).
+            4. ישעיהו לייבוביץ (ביקורת ערכית וחדות לוגית).
+            5. מרקו אורליוס (סטואיות, חובה וניהול סיכונים מושכל).
+            
+            דרישות חובה:
+            - כל דמות חייבת להתייחס לנקודות ספציפיות בטקסט של אפי (כמו 'עורכי דין בארה"ב', 'לידים של תאונות').
+            - על הדמויות להתווכח אחת עם השנייה (למשל: מאסק קורא ללייבוביץ' מיושן, ג'ובס מבקר את חוסר הסטייל של מאסק).
+            - ספק תובנות אופרטיביות (מה הלקוח באמת צריך?).
+            
+            בסוף הדיון, כתוב פרק בשם 'שורה תחתונה אסטרטגית לאפי' עם 3 המלצות לביצוע.
+            כתוב הכל בעברית רהוטה ומקצועית.
+            """
+            
+            try:
+                response = model.generate_content(full_prompt)
+                st.divider()
+                st.markdown(response.text)
+                
+            except Exception as e:
+                st.error(f"שגיאה בתקשורת עם ה-AI: {e}")
 
-        # הוספת יועץ בהפתעה
-        if surprise_on:
-            surprise_pool = {
-                "ניקולו מאקיאוולי": "🦊 'עדיף שיפחדו ממך מאשר שיאהבו אותך. השתמש ברעיון הזה לכוח.'",
-                "לאונרדו דה וינצ'י": "🎨 'פשטות היא התחכום האולטימטיבי. הרעיון שלך עמוס מדי.'",
-                "אלכסנדר הגדול": "⚔️ 'הרעיון שלך קטן מדי. העולם שייך למי שמעז לכבוש את הבלתי אפשרי!'"
-            }
-            s_name, s_text = random.choice(list(surprise_pool.items()))
-            selected_members.append(s_name)
-            responses[s_name] = s_text
-            cabinet_data[s_name] = "🎁"
-
-        # תצוגה בעמודות
-        cols = st.columns(3)
-        for idx, name in enumerate(selected_members):
-            with cols[idx % 3]:
-                with st.chat_message(name, avatar=cabinet_data.get(name, "👤")):
-                    st.subheader(name)
-                    st.write(responses.get(name, "אין לי מה לומר על זה."))
-
-        st.divider()
-        st.info("✅ הישיבה ננעלה.")
+st.divider()
+st.caption("מערכת הקבינט 2026 | מופעל על ידי Gemini 1.5 Pro")
