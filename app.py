@@ -7,7 +7,7 @@ st.set_page_config(page_title="הקבינט האסטרטגי - אפי", layout="
 # --- חיבור למוח של גוגל (GEMINI) ---
 API_KEY = "AIzaSyB12avvwGP6ECzfzTFOLDdfJHW37EQJvVo" 
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 # --- מנגנון אבטחה ---
 if 'auth' not in st.session_state:
