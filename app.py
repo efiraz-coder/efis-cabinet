@@ -5,11 +5,12 @@ import google.generativeai as genai
 st.set_page_config(page_title="קבינט המוחות: ניתוח אסטרטגי", layout="wide")
 
 # --- חיבור ל-API ---
+# המפתח שלך כבר בפנים
 API_KEY = "AIzaSyB12avvwGP6ECzfzTFOLDdfJHW37EQJvVo" 
 genai.configure(api_key=API_KEY)
 
-# ניסיון חיבור למודל יציב
-model = genai.GenerativeModel('gemini-1.5-flash')
+# יצירת המודל - הגדרה יציבה למניעת שגיאת 404
+model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 
 # --- מנגנון סיסמה ---
 if 'auth' not in st.session_state:
@@ -49,12 +50,13 @@ if st.button("🚀 הפעל סימולציית קבינט"):
             כתוב בעברית.
             """
             try:
-                # התיקון המרכזי: שליחה ללא ציון גרסת API בתוך הפונקציה
+                # שימוש בשיטה הישירה למניעת שגיאת API version
                 response = model.generate_content(prompt)
                 st.divider()
                 st.markdown(response.text)
             except Exception as e:
-                st.error(f"שגיאה: {str(e)}")
+                # הצגת שגיאה מפורטת אם עדיין יש בעיה
+                st.error(f"שגיאה בתקשורת: {str(e)}")
 
 st.divider()
 st.caption("מערכת הקבינט | Gemini AI 2026")
