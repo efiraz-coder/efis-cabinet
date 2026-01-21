@@ -5,11 +5,10 @@ import google.generativeai as genai
 st.set_page_config(page_title="קבינט המוחות: ניתוח אסטרטגי", layout="wide")
 
 # --- חיבור ל-API ---
-# המפתח שלך כבר בפנים
 API_KEY = "AIzaSyB12avvwGP6ECzfzTFOLDdfJHW37EQJvVo" 
 genai.configure(api_key=API_KEY)
 
-# יצירת המודל - הגדרה יציבה למניעת שגיאת 404
+# התיקון לשגיאת 404: הגדרת מודל יציב
 model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 
 # --- מנגנון סיסמה ---
@@ -41,21 +40,18 @@ if st.button("🚀 הפעל סימולציית קבינט"):
             prompt = f"""
             נתח עבור אפי את הנושא: "{idea}"
             אתה קבינט הכולל את: סטיב ג'ובס, אלון מאסק, ניקולו מאקיאוולי, וישעיהו לייבוביץ.
-            
             הנחיות:
-            1. כל דמות מגיבה מנקודת מבטה המקצועית/פילוסופית.
-            2. צור ויכוח ביניהם (הצלבת דעות).
-            3. התייחס ספציפית לשוק הלידים ותאונות הדרכים בארה"ב.
-            4. סיכום: 3 המלצות מעשיות בשורה התחתונה.
+            1. כל דמות מגיבה מנקודת מבטה המקצועית.
+            2. צור ויכוח ביניהם על שוק הלידים בארה"ב.
+            3. ספק 3 המלצות מעשיות בשורה התחתונה.
             כתוב בעברית.
             """
             try:
-                # שימוש בשיטה הישירה למניעת שגיאת API version
-                response = model.generate_content(prompt)
+                # שימוש ב-transport="rest" פותר בעיות תאימות של v1beta
+                response = model.generate_content(prompt, transport="rest")
                 st.divider()
                 st.markdown(response.text)
             except Exception as e:
-                # הצגת שגיאה מפורטת אם עדיין יש בעיה
                 st.error(f"שגיאה בתקשורת: {str(e)}")
 
 st.divider()
