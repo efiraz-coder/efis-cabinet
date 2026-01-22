@@ -1,15 +1,25 @@
 import streamlit as st
 import google.generativeai as genai
 
-# הגדרות בסיסיות
-st.set_page_config(page_title="הקבינט של אפי", layout="wide")
+st.set_page_config(page_title="קבינט המוחות של אפי", layout="wide")
 
-# הגדרת ה-AI
+# הגדרת ה-API
 API_KEY = "AIzaSyB12avvwGP6ECzfzTFOLDdfJHW37EQJvVo"
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-pro')
 
-# כניסה פשוטה
+# מנגנון שמוצא אוטומטית את המודל התקין כדי למנוע שגיאת 404
+@st.cache_resource
+def load_model():
+    try:
+        # ניסיון ראשון: המודל הכי חדיש
+        return genai.GenerativeModel('gemini-1.5-flash-latest')
+    except:
+        # ניסיון שני: המודל הסטנדרטי
+        return genai.GenerativeModel('gemini-pro')
+
+model = load_model()
+
+# --- אבטחה ---
 if 'auth' not in st.session_state:
     st.session_state['auth'] = False
 
@@ -21,16 +31,20 @@ if not st.session_state['auth']:
             st.rerun()
     st.stop()
 
-# ממשק משתמש
-st.title("🏛️ קבינט המוחות הגדולים")
-idea = st.text_area("תאר את הדילמה (לידים, עורכי דין וכו'):", height=150)
+# --- ממשק ---
+st.title("🏛️ קבינט המוחות: ניתוח לידים בארה\"ב")
+idea = st.text_area("הכנס את הדילמה העסקית שלך:", height=150)
 
-if st.button("הפעל דיון"):
+if st.button("🚀 הפעל את הקבינט"):
     if idea:
-        with st.spinner("הקבינט חושב..."):
+        with st.spinner("מתחבר למוחות הגדולים..."):
             try:
-                # כאן מחקנו את ה-transport שגרם לשגיאה
-                response = model.generate_content(f"נתח עבור אפי כקבינט יועצים (ג'ובס, מאסק, מאקיאוולי): {idea}")
+                # שימוש ב-transport='rest' עוקף את בעיית ה-v1beta
+                response = model.generate_content(
+                    f"נתח עבור אפי את נושא הלידים לעורכי דין בארה\"ב: {idea}. השב כקבינט של סטיב ג'ובס, מאסק ומאקיאוולי.",
+                    transport='rest'
+                )
                 st.markdown(response.text)
             except Exception as e:
-                st.error(f"שגיאה: {str(e)}")
+                st.error(f"ניסיון אחרון נכשל: {str(e)}")
+                st.info("נסה ללחוץ על 'Clear Cache' בתפריט הימני למעלה.")
